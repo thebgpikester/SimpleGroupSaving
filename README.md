@@ -2,14 +2,18 @@
 
 Usage of this script should credit the following contributors:
 -Pikey
+
 -Speed & Grimes for their work on Serialising tables
+
 -FlightControl for MOOSE (Required)
  
-INTENDED USAGE
+INTENDED AUDIENCE
+
 DCS Server Admins looking to do long term multi session play that will need a server reboot in between and they wish to keep the Ground 
 Unit positions true from one reload to the next.
  
 USAGE
+
 Ensure LFS and IO are not santitised in missionScripting.lua. This enables writing of files. If you don't know what this does, don't attempt to use this script. 
 Requires versions of MOOSE.lua supporting "SET:ForEachGroupAlive()". Should be good for 6 months or more from date of writing. MIST not required, but should work OK with it regardless. 
 Edit 'SaveScheduleUnits' below, (line 34) to the number of seconds between saves. Low impact. 10 seconds is a fast schedule. 
@@ -18,6 +22,7 @@ At Mission Start it will check for a save file, if not there, create it fresh. I
 The next time the mission is loaded it goes through all the Groups again and loads them from the save file.
  
 LIMITATIONS
+
 Only Ground Groups and Units are specified, play with the SET Filter at your own peril. Could be adjusted for just one Coalition or a FilterByName(). See line 107 and 168 for the SET.
 See https://flightcontrol-master.github.io/MOOSE_DOCS_DEVELOP/Documentation/Core.Set.html##(SET_GROUP)
 
