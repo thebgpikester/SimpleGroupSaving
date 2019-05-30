@@ -7,6 +7,8 @@ Usage of this script should credit the following contributors:
 -Speed & Grimes for their work on Serialising tables
 
 -FlightControl for MOOSE (Required)
+
+(Shout out to FunkyFranky for a quick solution on an error in a loop)
  
 INTENDED AUDIENCE
 
