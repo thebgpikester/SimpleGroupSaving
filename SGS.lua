@@ -3,6 +3,7 @@
  --Pikey, 
  --Speed & Grimes for their work on Serialising tables, included below,
  --FlightControl for MOOSE (Required)
+ --Ghostrider+Moose community for fixing Radians instead of degrees
  
  --INTENDED USAGE
  --DCS Server Admins looking to do long term multi session play that will need a server reboot in between and they wish to keep the Ground 
@@ -35,7 +36,7 @@
  -----------------------------------
  --Do not edit below here
  -----------------------------------
- local version = "1.0"
+ local version = "1.1 - March 2020"
  
  function IntegratedbasicSerialize(s)
     if s == nil then
@@ -189,7 +190,7 @@ local tmpTable =
     ["x"]=grp:GetUnit(i):GetVec2().x,
     ["name"]=grp:GetUnit(i):GetName(),
     ["playerCanDrive"]=true,
-    ["heading"]=grp:GetUnit(i):GetHeading(),
+    ["heading"]=math.rad(grp:GetUnit(i):GetHeading()), --fixed 24/03/2020
   }
 
 table.insert(_unittable,tmpTable) --add units to a temporary table
@@ -199,12 +200,11 @@ SaveUnits[grp:GetName()] =
 {
    ["CountryID"]=grp:GetCountry(),
    ["SpawnCoalitionID"]=grp:GetCountry(),
-   ["tasks"]={}, --grp:GetTaskMission(), --wrong gives the whole thing
+   ["tasks"]={}, 
    ["CategoryID"]=grp:GetCategory(),
    ["task"]="Ground Nothing",
-   ["route"]={}, -- grp:GetTaskRoute(),
+   ["route"]={}, 
    ["groupId"]=grp:GetID(),
-   --["SpawnCategoryID"]=grp:GetCategory(),
    ["units"]= _unittable,
    ["y"]=grp:GetVec2().y, 
    ["x"]=grp:GetVec2().x,
