@@ -33,6 +33,7 @@
  -----------------------------------
  --Configurable for user:
  SaveScheduleUnits=10 --how many seconds between each check of all the statics.
+ SaveFilePath = lfs.writedir().."Missions/saveUnits.lua"
  -----------------------------------
  --Do not edit below here
  -----------------------------------
@@ -103,7 +104,7 @@ end
 --SCRIPT START
 env.info("Loaded Simple Group Saving, by Pikey, 2018, version " .. version)
 
-if file_exists("SaveUnits.lua") then --Script has been run before, so we need to load the save
+if file_exists(SaveFilePath) then --Script has been run before, so we need to load the save
   env.info("Existing database, loading from File.")
   AllGroups = SET_GROUP:New():FilterCategories("ground"):FilterActive(true):FilterStart()
     AllGroups:ForEachGroup(function (grp)
@@ -217,7 +218,7 @@ SaveUnits[grp:GetName()] =
 end)
 
 newMissionStr = IntegratedserializeWithCycles("SaveUnits",SaveUnits) --save the Table as a serialised type with key SaveUnits
-writemission(newMissionStr, "SaveUnits.lua")--write the file from the above to SaveUnits.lua
+writemission(newMissionStr, SaveFilePath)--write the file from the above to SaveUnits.lua
 SaveUnits={}--clear the table for a new write.
 --env.info("Data saved.")
 end, {}, 1, SaveScheduleUnits)
