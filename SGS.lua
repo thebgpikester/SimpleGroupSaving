@@ -111,7 +111,7 @@ if file_exists(SaveFilePath) then --Script has been run before, so we need to lo
       grp:Destroy()
     end)
 
-  dofile("SaveUnits.lua")
+  dofile(SaveFilePath)
   tempTable={}
   Spawn={}
 --RUN THROUGH THE KEYS IN THE TABLE (GROUPS)
@@ -218,7 +218,7 @@ SaveUnits[grp:GetName()] =
 end)
 
 newMissionStr = IntegratedserializeWithCycles("SaveUnits",SaveUnits) --save the Table as a serialised type with key SaveUnits
-writemission(newMissionStr, SaveFilePath)--write the file from the above to SaveUnits.lua
+writemission(newMissionStr, SaveFilePath)--write the file from the above to "SaveFilePath"
 SaveUnits={}--clear the table for a new write.
 --env.info("Data saved.")
 end, {}, 1, SaveScheduleUnits)
