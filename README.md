@@ -1,3 +1,4 @@
+Broken Since October 2021 by Eagle Dynamics dead event bug requiring refactoring.
 # Simple Group Saving by Pikey May 2019
 
 Usage of this script should credit the following contributors:
