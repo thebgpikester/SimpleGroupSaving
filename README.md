@@ -1,4 +1,4 @@
-Broken Since October 2021 by Eagle Dynamics dead event bug requiring refactoring.
+Updated Dec 2022 - worked around a bug that caused every unit found in a group to return the first one's details. Not sure when that broke, possibly October 2022
 # Simple Group Saving by Pikey May 2019
 
 Usage of this script should credit the following contributors:
