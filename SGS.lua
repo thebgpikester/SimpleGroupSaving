@@ -1,4 +1,8 @@
--- Simple Group Saving by Pikey May 2019 https://github.com/thebgpikester/SimpleGroupSaving/
+-- Simple Group Saving by Pikey May 2019 updated December 2022 https://github.com/thebgpikester/SimpleGroupSaving/
+-- 1.2 -  GetUnit(x) was only returning GetUnit(1) - rewitten for GetUnits()
+-- Protected namespace used as there can be variable name collisions
+-- MOOSE and IO checks
+
 -- Usage of this script should credit the following contributors:
  --Pikey, 
  --Speed & Grimes for their work on Serialising tables, included below,
@@ -8,11 +12,11 @@
  --INTENDED USAGE
  --DCS Server Admins looking to do long term multi session play that will need a server reboot in between and they wish to keep the Ground 
  --Unit positions true from one reload to the next.
+ --Something simpler than DSMC (the best tool for persistence) but captures unit headings
  
  --USAGE
  --Ensure LFS and IO are not santitised in missionScripting.lua. This enables writing of files. If you don't know what this does, don't attempt to use this script.
- --Requires versions of MOOSE.lua supporting "SET:ForEachGroupAlive()". Should be good for 6 months or more from date of writing. 
- --MIST not required, but should work OK with it regardless.
+ --MIST not required, some reports of issues with concurrent running in certain orders/usages
  --Edit 'SaveScheduleUnits' below, (line 34) to the number of seconds between saves. Low impact. 10 seconds is a fast schedule.
  --Place Ground Groups wherever you want on the map as normal.
  --Run this script at Mission start
@@ -21,6 +25,7 @@
  --If the table is there, it loads it and Spawns everything that was saved.
  --The table is updated throughout mission play
  --The next time the mission is loaded it goes through all the Groups again and loads them from the save file.
+ --You can use this to place groups for any mission, it spawns whatever is in the file!
  
  --LIMITATIONS
  --Only Ground Groups and Units are specified, play with the SET Filter at your own peril. Could be adjusted for just one Coalition or a FilterByName().
@@ -32,13 +37,19 @@
  --route, only for the original route it recieved from the Mission Editor. Therefore a DCS limitation.
  -----------------------------------
  --Configurable for user:
- SaveScheduleUnits=10 --how many seconds between each check of all the statics.
+ local SaveScheduleUnits = 10 --how many seconds between each check of all the units.
  -----------------------------------
  --Do not edit below here
  -----------------------------------
- local version = "1.1 - March 2020"
+ local version = "1.2 - December 2022"
  
- function IntegratedbasicSerialize(s)
+ SGS={}
+ 
+ if SET_GROUP then --MOOSE check
+ 
+ if io then --sanitization check
+ 
+ function SGS.IntegratedbasicSerialize(s)
     if s == nil then
       return "\"\""
     else
@@ -51,14 +62,14 @@
   end
   
 -- imported slmod.serializeWithCycles (Speed)
-  function IntegratedserializeWithCycles(name, value, saved)
+  function SGS.IntegratedserializeWithCycles(name, value, saved)
     local basicSerialize = function (o)
       if type(o) == "number" then
         return tostring(o)
       elseif type(o) == "boolean" then
         return tostring(o)
       else -- assume it is a string
-        return IntegratedbasicSerialize(o)
+        return SGS.IntegratedbasicSerialize(o)
       end
     end
 
@@ -77,7 +88,7 @@
           table.insert(t_str, "{}\n")
           for k,v in pairs(value) do      -- save its fields
             local fieldname = string.format("%s[%s]", name, basicSerialize(k))
-            table.insert(t_str, IntegratedserializeWithCycles(fieldname, v, saved))
+            table.insert(t_str, SGS.IntegratedserializeWithCycles(fieldname, v, saved))
           end
         end
       end
@@ -87,57 +98,58 @@
     end
   end
 
-function file_exists(name) --check if the file already exists for writing
+function SGS.file_exists(name) --check if the file already exists for writing
     if lfs.attributes(name) then
     return true
     else
     return false end 
 end
 
-function writemission(data, file)--Function for saving to file (commonly found)
-  File = io.open(file, "w")
-  File:write(data)
-  File:close()
+function SGS.writemission(data, file)
+  SGS.File = io.open(file, "w")
+  SGS.File:write(data)
+  SGS.File:close()
 end
 
 --SCRIPT START
 env.info("Loaded Simple Group Saving, by Pikey, 2018, version " .. version)
 
-if file_exists("SaveUnits.lua") then --Script has been run before, so we need to load the save
+if SGS.file_exists("SaveUnits.lua") then --Script has been run before, so we need to load the save
   env.info("Existing database, loading from File.")
-  AllGroups = SET_GROUP:New():FilterCategories("ground"):FilterActive(true):FilterStart()
-    AllGroups:ForEachGroup(function (grp)
+  SGS.AllGroups = SET_GROUP:New():FilterCategories("ground"):FilterActive(true):FilterStart()
+    SGS.AllGroups:ForEachGroup(function (grp)
       grp:Destroy()
     end)
-
+  --NOTE the removal of all groups is required to put them back in the right place, therefore consider your script order very carefully, with this higher up.
   dofile("SaveUnits.lua")
-  tempTable={}
-  Spawn={}
+  SGS.tempTable={}
+  SGS.Spawn={}
 --RUN THROUGH THE KEYS IN THE TABLE (GROUPS)
-  for k,v in pairs (SaveUnits) do
-    units={}
+  for k,v in pairs (SGS.SaveUnits) do
+    SGS.units={}
 --RUN THROUGH THE UNITS IN EACH GROUP
-      for i= 1, #(SaveUnits[k]["units"]) do 
+      for i= 1, #(SGS.SaveUnits[k]["units"]) do 
   
-tempTable =
+SGS.tempTable =
 
   { 
-   ["type"]=SaveUnits[k]["units"][i]["type"],
+   ["type"]=SGS.SaveUnits[k]["units"][i]["type"],
    ["transportable"]= {["randomTransportable"] = false,}, 
    --["unitId"]=9000,used to generate ID's here but no longer doing that since DCS seems to handle it
-   ["skill"]=SaveUnits[k]["units"][i]["skill"],
-   ["y"]=SaveUnits[k]["units"][i]["y"] ,
-   ["x"]=SaveUnits[k]["units"][i]["x"] ,
-   ["name"]=SaveUnits[k]["units"][i]["name"],
-   ["heading"]=SaveUnits[k]["units"][i]["heading"],
+   ["skill"]=SGS.SaveUnits[k]["units"][i]["skill"],
+   ["y"]=SGS.SaveUnits[k]["units"][i]["y"] ,
+   ["x"]=SGS.SaveUnits[k]["units"][i]["x"] ,
+   ["name"]=SGS.SaveUnits[k]["units"][i]["name"],
+   ["heading"]=SGS.SaveUnits[k]["units"][i]["heading"],
    ["playerCanDrive"]=true,  --hardcoded but easily changed.  
+   
   }
 
-      table.insert(units,tempTable)
+      table.insert(SGS.units,SGS.tempTable)
     end --end unit for loop
 
 
-groupData = 
+SGS.groupData = 
 
   {
     ["visible"] = true,
@@ -153,50 +165,51 @@ groupData =
     -- },-- end of ["spans"] 
     --["groupId"] = 9000 + _count,
     ["hidden"] = false,
-    ["units"] = units,
-    ["y"] = SaveUnits[k]["y"],
-    ["x"] = SaveUnits[k]["x"],
-    ["name"] = SaveUnits[k]["name"],
+    ["units"] = SGS.units,
+    ["y"] = SGS.SaveUnits[k]["y"],
+    ["x"] = SGS.SaveUnits[k]["x"],
+    ["name"] = SGS.SaveUnits[k]["name"],
     --["start_time"] = 0,
   } 
 
-  coalition.addGroup(SaveUnits[k]["CountryID"], SaveUnits[k]["CategoryID"], groupData)
-  groupData = {}
+  coalition.addGroup(SGS.SaveUnits[k]["CountryID"], SGS.SaveUnits[k]["CategoryID"], SGS.groupData)
+  SGS.groupData = {}
   end --end Group for loop
 
 else --Save File does not exist we start a fresh table, no spawns needed
-  SaveUnits={}
-  AllGroups = SET_GROUP:New():FilterCategories("ground"):FilterActive(true):FilterStart()
+  SGS.SaveUnits={}
+  SGS.AllGroups = SET_GROUP:New():FilterCategories("ground"):FilterActive(true):FilterStart()
 end
 
 --THE SAVING SCHEDULE
 SCHEDULER:New( nil, function()
-  AllGroups:ForEachGroupAlive(function (grp)
-  local DCSgroup = Group.getByName(grp:GetName() )
-  local size = DCSgroup:getSize()
+  SGS.AllGroups:ForEachGroupAlive(function (grp)
+    local list = grp:GetUnits()
 
-_unittable={}
+SGS._unittable={}
 
-for i = 1, size do
+for i=1,#list do
 
 local tmpTable =
 
   {   
-    ["type"]=grp:GetUnit(i):GetTypeName(),
+    ["type"]=list[i]:GetTypeName(),
+    ["livery_id"]=list[i]:GetTemplate()["livery_id"], --added Dec 2022
     ["transportable"]=true,
-    ["unitID"]=grp:GetUnit(i):GetID(),
+    ["unitID"]=list[i]:GetID(),
     ["skill"]="Average",
-    ["y"]=grp:GetUnit(i):GetVec2().y,
-    ["x"]=grp:GetUnit(i):GetVec2().x,
-    ["name"]=grp:GetUnit(i):GetName(),
+    ["y"]=list[i]:GetVec2().y,
+    ["x"]=list[i]:GetVec2().x,
+    ["name"]=list[i]:GetName(),
     ["playerCanDrive"]=true,
-    ["heading"]=math.rad(grp:GetUnit(i):GetHeading()), --fixed 24/03/2020
+    ["heading"]=math.rad(list[i]:GetHeading()), --fixed 24/03/2020
+   
   }
 
-table.insert(_unittable,tmpTable) --add units to a temporary table
+table.insert(SGS._unittable,tmpTable) --add units to a temporary table
 end
 
-SaveUnits[grp:GetName()] =
+SGS.SaveUnits[grp:GetName()] =
 {
    ["CountryID"]=grp:GetCountry(),
    ["SpawnCoalitionID"]=grp:GetCountry(),
@@ -205,7 +218,7 @@ SaveUnits[grp:GetName()] =
    ["task"]="Ground Nothing",
    ["route"]={}, 
    ["groupId"]=grp:GetID(),
-   ["units"]= _unittable,
+   ["units"]= SGS._unittable,
    ["y"]=grp:GetVec2().y, 
    ["x"]=grp:GetVec2().x,
    ["name"]=grp:GetName(),
@@ -216,8 +229,13 @@ SaveUnits[grp:GetName()] =
 
 end)
 
-newMissionStr = IntegratedserializeWithCycles("SaveUnits",SaveUnits) --save the Table as a serialised type with key SaveUnits
-writemission(newMissionStr, "SaveUnits.lua")--write the file from the above to SaveUnits.lua
-SaveUnits={}--clear the table for a new write.
+SGS.newMissionStr = SGS.IntegratedserializeWithCycles("SGS.SaveUnits",SGS.SaveUnits) --save the Table as a serialised type with key SaveUnits
+SGS.writemission(SGS.newMissionStr, "SaveUnits.lua")--write the file from the above to SaveUnits.lua
+SGS.SaveUnits={}--clear the table for a new write.
 --env.info("Data saved.")
 end, {}, 1, SaveScheduleUnits)
+
+else env.error("Lua io is sanitized. Read the requirements. Writing to the file system is required!")
+end
+else env.error("MOOSE not loaded! MOOSE must be loaded before running this.")
+end
