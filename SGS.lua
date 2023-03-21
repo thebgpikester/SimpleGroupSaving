@@ -1,5 +1,6 @@
--- Simple Group Saving by Pikey May 2019 updated December 2022 https://github.com/thebgpikester/SimpleGroupSaving/
--- 1.2 -  GetUnit(x) was only returning GetUnit(1) - rewitten for GetUnits()
+-- Simple Group Saving by Pikey May 2019, updated March 2023 https://github.com/thebgpikester/SimpleGroupSaving/
+-- 1.3 - Added custom file path March 21st
+-- 1.2 -  GetUnit(x) was only returning GetUnit(1) - rewitten for GetUnits() December 2022
 -- Protected namespace used as there can be variable name collisions
 -- MOOSE and IO checks
 
@@ -35,15 +36,17 @@
  --Statics are not included. See 'Simple Static Saving' for a solution
  --Routes are not saved. Uncomment lines 148-153 if you wish to keep them, but they won't activate them on restart. It is impossible to query a group for it's current
  --route, only for the original route it recieved from the Mission Editor. Therefore a DCS limitation.
+ SGS={} --DO NOT TOUCH
  -----------------------------------
  --Configurable for user:
+ SGS.filepath = lfs.writedir().."SaveUnits.lua" -- editing this changes the save file directory\filename from the default "Saved\Games\DCS\SaveUnits.lua"
  local SaveScheduleUnits = 10 --how many seconds between each check of all the units.
  -----------------------------------
  --Do not edit below here
  -----------------------------------
- local version = "1.2 - December 2022"
+ local version = "1.3 - March 2023"
  
- SGS={}
+
  
  if SET_GROUP then --MOOSE check
  
@@ -114,14 +117,14 @@ end
 --SCRIPT START
 env.info("Loaded Simple Group Saving, by Pikey, 2018, version " .. version)
 
-if SGS.file_exists("SaveUnits.lua") then --Script has been run before, so we need to load the save
+if SGS.file_exists(SGS.filepath) then --Script has been run before, so we need to load the save
   env.info("Existing database, loading from File.")
   SGS.AllGroups = SET_GROUP:New():FilterCategories("ground"):FilterActive(true):FilterStart()
     SGS.AllGroups:ForEachGroup(function (grp)
       grp:Destroy()
     end)
   --NOTE the removal of all groups is required to put them back in the right place, therefore consider your script order very carefully, with this higher up.
-  dofile("SaveUnits.lua")
+  dofile(SGS.filepath)
   SGS.tempTable={}
   SGS.Spawn={}
 --RUN THROUGH THE KEYS IN THE TABLE (GROUPS)
@@ -230,7 +233,7 @@ SGS.SaveUnits[grp:GetName()] =
 end)
 
 SGS.newMissionStr = SGS.IntegratedserializeWithCycles("SGS.SaveUnits",SGS.SaveUnits) --save the Table as a serialised type with key SaveUnits
-SGS.writemission(SGS.newMissionStr, "SaveUnits.lua")--write the file from the above to SaveUnits.lua
+SGS.writemission(SGS.newMissionStr, SGS.filepath)--write the file from the above to SaveUnits.lua
 SGS.SaveUnits={}--clear the table for a new write.
 --env.info("Data saved.")
 end, {}, 1, SaveScheduleUnits)
