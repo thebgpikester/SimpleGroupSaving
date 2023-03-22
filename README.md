@@ -18,31 +18,37 @@ Usage of this script should credit the following contributors, copy and paste it
 2. The SGS.lua file in this repository. Run this file after the Moose.lua, preferably as a ONCE trigger with no conditions and a DO FILE action. 
 3. Your target DCS installation must have access to run io and lfs to write the file. This is a step that is unavoidable for saving any file via a mission but it carries risk whcih I will explain as a footnote**
 
-## LIMITATIONS
 
-By default saves both coalitions, and only Ground groups and units. Can be adjusted for just one Coalition or a FilterByName() which means units that share the same string of letters in their name.
+## USAGE
+1. Review the script SGS.lua for its options:
+- SGS.filepath can be changed to suit. Note the new default location is the [Userprofile]\Saved Games\DCS\SaveUnits.lua 
+- SaveScheduleUnits = "10" is the amount in seconds before each save iteration. There emay be marginal performance gains by increasing this number. With over 500 units there might be a delay if you are hosting and playing at the same time.
+2. Load Moose and SGS into your Missions triggers at the begining of any mission.
+3. Launch any Mission and with the prerequisites followed, the unit positions are saved to file. Note some ISP's do not like the de sanitization.
+
+## LIMITATIONS
+By default, this script saves the position and heading only of both coalitions' Ground units. The script can be adjusted for just one Coalition or a FilterByName() which means units that share the same string of letters in their name.
 See https://flightcontrol-master.github.io/MOOSE_DOCS_DEVELOP/Documentation/Core.Set.html##(SET_GROUP)
 
-*Air units are not Saved.* The reason is that the DCS API (Simulator Scripting Engine) does not allow us to export any Tasks of a plane in memory, thus respawning a plane without the game memory will cause air units to just RTB instantly.
+- *Air units are not Saved.* The reason is that the DCS API (Simulator Scripting Engine) does not allow us to export any Tasks of a plane in memory, thus respawning a plane without the game memory will cause air units to just RTB instantly.
 
-*Naval Groups not Saved.* The reason is that Naval units acting as airbases that hold a Client plane/helo slot cannot be spawned in a new place. Since ships don't go far, it's not always a problem. If you want to include non airbase type ships it would require sorting through ships by name and a specific setup.
+- *Naval Groups not Saved.* The reason is that Naval units acting as airbases that hold a Client plane/helo slot cannot be spawned in a new place. Since ships don't go far, it's not always a problem. If you want to include non airbase type ships it would require sorting through ships by name and a specific setup.
 
-*Statics are not saved*. See 'Simple Static Saving' in my repo for a solution.
+- *Statics are not saved*. See 'Simple Static Saving' in my repo for a solution.
 
-*Routes and tasks are not saved.* Routes and tasks for dynamically routed or dynamically tasked AI cannot be accessed, its in DCS memory and ED haven't given us tools for accessing it. Therefore a DCS limitation.
+- *Routes and tasks are not saved.* Routes and tasks for dynamically routed or dynamically tasked AI cannot be accessed, its in DCS memory and ED haven't given us tools for accessing it. Therefore a DCS limitation.
+
+- *Non default Liveries are not saved.* I've tried and failed here, the code should work.
 
 ## Changes
-- Updated March 2023 - moved saves to saved games and provided variable at top for customising save name.
+- Updated March 2023 - moved saves to saved games and provided variable at top for customising save name\location.
 - Updated Dec 2022 - worked around a bug that caused every unit found in a group to return the first one's details. Not sure when that broke, possibly October 2022.
 
 ## MissionScripting.lua Sanitization
-People today are getting too blasé about reverting the ED santization of the insecure modules in their DCS installation. On one hand, developers are enabling things with this code that DCS should have written years ago and doing interesitng and great things. On the other hand we are having to open up security measures to do it. Since it hs become prevalent I am going to put a DISCLAIMER and clear warning here:
+People today are getting too blasé about reverting the ED santization of the insecure modules in their DCS installation. On one hand, developers are enabling things with this code that DCS should have written years ago and doing interesting and great things. On the other hand we are having to open up security measures to do it. The lua modules of os, lfs and io enable the execution of any code from within the mission environment. This is a double edged sword. As a server, you only execute what you want, and therefore as long as this is your server, your mission, and you understand not to download any mission file and run it without reading the code that executes, your risk is small to none. As a client, if you visit a server you do not know, execute a trackfile from somewhere generated by a malicious server, including your own visit, you can execute arbitrary code on your computer that can enable an attacker to take complete control of your computer and more. Since it hs become prevalent I am going to put a DISCLAIMER and clear warning here:
 
 ### DISCLAIMER
-The lua modules of os, lfs and io enable the execution of any code from within the mission environment. This is a double edged sword. As a server, you only execute what you want, and therefore as long as this is your server and you understand not to download any mission file and run it without reading the code that executes, your risk is smaller.
-As a Player or Client, and I mean someone who joins other servers, this problem is potentially much, much worse. You may run downloaded missions from any source that executes code on your PC to install anything the attacker wishes. COde can also be obfuscated and precomiled so you never even see it. If you join a server you do not *normally* execute the servers code, you just listen to its units moving around and messages and so on. However, in a certain set of circumstances you can run code from a server that was crafted specifically to grant complete control of your computer. One typical way might be reviewing a track file later, and other ways are more complex. I've seen it exploited with my own eyes and it made the blood drain from my face. 
-
-This SGS.lua script for DCS World does not enable anything by itself, **you have to do that**. You will not be able to blame me, ED or anyone else for any loss or damage, even if you downloaded the file from their repository. That waiver is in your license agreement. To imagine they check all that code is an inexusable naivety anyway. You perform the actions below with the full knowledge of the Risk to your computer, data and liveliehood:
+This SGS.lua script for DCS World does not enable anything by itself, **you have to remove the sanitization of the io, lfs and os yourself**. Removing the sanitization opens a security hole and creates additional risk. The risk is that by visiting a malicious server, or by running a malicious mission, or by reviewing a track file taken of a malicious server, you may run code created from an attacker that allows them to control your computer and do anything they want with it. If you are in doubt, DO NOT remove the sanitizattion or follow the steps below. I do not take any responsibility for encouraging this and the practice is often made for other scripts performing similar functions, including SRS text to speech. The choice is yours, the Risk is explained and the isntrucitons are below:
 
 Knowing the possibilities of risk, comment out the lines in [DCS Installation]\Scripts\MissionScripting.lua using two minus -- like this:
 ![image](https://user-images.githubusercontent.com/22999891/226931677-6624ff7f-7708-422b-b65d-c7880ff6c4b6.png)
