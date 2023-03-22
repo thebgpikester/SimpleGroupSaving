@@ -2,11 +2,11 @@
 
 Usage of this script should credit the following contributors, copy and paste it into your code and DO NOT DELETE else I will have your mission removed from wherever it is:
 
--Pikey
--Speed & Grimes for their work on Serialising tables
--FlightControl for MOOSE (Required)
--FunkyFranky for a quick solution on an error in a loop
--Moose contirbutors with radian fixes, ideas and requests
+- Pikey
+- Speed & Grimes for their work on Serialising tables
+- FlightControl for MOOSE (Required)
+- FunkyFranky for a quick solution on an error in a loop
+- Moose contirbutors with radian fixes, ideas and requests
  
 ## WHAT IS THIS?
 
