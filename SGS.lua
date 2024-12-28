@@ -1,4 +1,5 @@
--- Simple Group Saving by Pikey May 2019, updated March 2023 https://github.com/thebgpikester/SimpleGroupSaving/
+-- Simple Group Saving by Pikey May 2019, updated Dec 2024 https://github.com/thebgpikester/SimpleGroupSaving/
+-- 1.4 - Commented out livery since this won't work with any groups that were spawned not in the mission table. See https://discord.com/channels/378590350614462464/378590350614462467/1322481960588939356
 -- 1.3 - Added custom file path March 21st
 -- 1.2 -  GetUnit(x) was only returning GetUnit(1) - rewitten for GetUnits() December 2022
 -- Protected namespace used as there can be variable name collisions
@@ -44,7 +45,7 @@
  -----------------------------------
  --Do not edit below here
  -----------------------------------
- local version = "1.3 - March 2023"
+ local version = "1.4 - Dec 2024"
  
 
  
@@ -197,7 +198,7 @@ local tmpTable =
 
   {   
     ["type"]=list[i]:GetTypeName(),
-    ["livery_id"]=list[i]:GetTemplate()["livery_id"], --added Dec 2022
+    --["livery_id"]=list[i]:GetTemplate()["livery_id"], --added Dec 2022 --taken away Dec 2024 see notes
     ["transportable"]=true,
     ["unitID"]=list[i]:GetID(),
     ["skill"]="Average",
